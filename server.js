@@ -18,6 +18,8 @@ const sessions = new Map();
 const encryptionKey = crypto.randomBytes(32);
 
 app.disable('x-powered-by');
+// Railway terminates HTTPS at one trusted reverse proxy before this service.
+app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], styleSrc: ["'self'"], scriptSrc: ["'self'"], imgSrc: ["'self'", 'data:'], connectSrc: ["'self'"] } } }));
 app.use(express.json({ limit: '64kb' }));
 app.use('/api/connect', rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: true, legacyHeaders: false }));
