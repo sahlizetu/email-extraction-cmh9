@@ -98,9 +98,9 @@ app.post('/api/extract/start',(req,res)=>{
   if(!session.folders.some(f=>f.path===folder)) return res.status(400).json({error:'Select a valid Gmail folder.'});
   if(!Number.isInteger(start)||start<1||!Number.isInteger(limit)||limit<1||limit>MAX_LIMIT) return res.status(400).json({error:`Start must be at least 1 and limit must be from 1 to ${MAX_LIMIT}.`});
   if(!MODES.includes(mode)) return res.status(400).json({error:'Select a valid download mode.'});
-  const job={id:crypto.randomBytes(12).toString('base64url'),status:'processing',phase:'Queued',progress:0,processed:0,total:limit,error:null};
+  const job={id:crypto.randomBytes(12).toString('base64url'),status:'processing',phase:'Connecting to Gmail',progress:1,processed:0,total:limit,error:null};
   session.job=job; session.result=null;
-  setImmediate(()=>runExtraction(session,job,{folder,start,limit,mode,options:req.body.options||{}}));
+  void runExtraction(session,job,{folder,start,limit,mode,options:req.body.options||{}});
   res.status(202).json({jobId:job.id});
 });
 
@@ -125,6 +125,7 @@ async function sendCombined(result,res,download) {
 app.get('/api/download',async(req,res)=>{const session=getSession(req,res,false);const result=session?.result;if(!result?.items?.length)return res.status(404).json({error:'No extraction result is available.'});await sendCombined(result,res,true);});
 app.get('/api/result-text',async(req,res)=>{const session=getSession(req,res,false);const result=session?.result;if(!result?.items?.length)return res.status(404).json({error:'No extraction result is available.'});await sendCombined(result,res,false);});
 
+app.use('/api',(req,res)=>res.status(404).json({error:'API endpoint not found. Deploy the latest server.js and retry.'}));
 app.use(express.static(path.join(__dirname,'public'),{extensions:['html'],maxAge:process.env.NODE_ENV==='production'?'1h':0}));
 app.use((req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
 setInterval(()=>{const cutoff=Date.now()-SESSION_TTL;for(const[id,s]of sessions)if(s.touchedAt<cutoff&&s.job?.status!=='processing')sessions.delete(id);},60_000).unref();
