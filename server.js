@@ -103,7 +103,7 @@ app.get('/api/download', (req,res) => {
 });
 
 app.use(express.static(path.join(__dirname,'public'), { extensions:['html'], maxAge:process.env.NODE_ENV === 'production' ? '1h' : 0 }));
-app.get('*', (req,res) => res.sendFile(path.join(__dirname,'public','index.html')));
+app.use((req,res) => res.sendFile(path.join(__dirname,'public','index.html')));
 
 setInterval(()=>{ const cutoff=Date.now()-SESSION_TTL; for(const [id,s] of sessions) if(s.touchedAt<cutoff) sessions.delete(id); },60_000).unref();
 if (require.main === module) app.listen(PORT,()=>console.log(`Email Extraction CMH9 running on http://localhost:${PORT}`));
