@@ -6,35 +6,10 @@ const path=require('node:path');
 const root=path.join(__dirname,'..');
 const html=fs.readFileSync(path.join(root,'public','index.html'),'utf8');
 const app=fs.readFileSync(path.join(root,'public','app.js'),'utf8');
-test('progress bar selector matches the rendered UI',()=>{
-  assert.match(html,/class="progress-rail"/);
-  assert.match(app,/querySelector\('\.progress-rail'\)/);
-  assert.doesNotMatch(app,/querySelector\('\.progress-track'\)/);
-});
-test('browser assets use the current cache version',()=>{
-  assert.match(html,/styles\.css\?v=5\.8/);
-  assert.match(html,/app\.js\?v=5\.8/);
-  assert.match(html,/v5\.8/);
-});
-test('Headers Only controls are present and Sender starts unchecked',()=>{
-  for(const id of ['headerFromName','headerLanguageCode','headerReturnPath','headerSubject','headerBoundary','headersAddSender']) assert.match(html,new RegExp(`id="${id}"`));
-  assert.match(html,/id="headersAddSender" type="checkbox">/);
-  assert.doesNotMatch(html,/id="headersAddSender"[^>]*checked/);
-});
-test('Clean Headers defaults, Received format, and mode locking are configured',()=>{
-  const match=app.match(/const cleanDefaults=new Set\(\[([^\]]+)\]\)/);
-  assert.ok(match);
-  const defaults=[...match[1].matchAll(/'([^']+)'/g)].map(value=>value[1]);
-  assert.deepEqual(defaults,['replaceDate','replaceTo','keepReceived','autoAddCc','keepReplyTo']);
-  assert.match(app,/\['modernReceivedFormat','New Received Format'\]/);
-  assert.ok(!defaults.includes('modernReceivedFormat'));
-  assert.match(app,/function setModeLock\(value\)/);
-  assert.match(app,/setModeLock\(true\);setBusy\(true,'Extraction in progress…'\)/);
-});
-test('four persistent themes are available at the top',()=>{
-  assert.match(html,/<html lang="en" data-theme="midnight">/);
-  for(const theme of ['midnight','warm','ocean','forest']) assert.match(html,new RegExp(`data-theme="${theme}"`));
-  assert.equal((html.match(/class="theme-choice/g)||[]).length,4);
-  assert.match(app,/localStorage\.setItem\('cmh9_theme'/);
-  assert.match(app,/localStorage\.getItem\('cmh9_theme'/);
-});
+const css=fs.readFileSync(path.join(root,'public','styles.css'),'utf8');
+test('progress bar selector matches the rendered UI',()=>{assert.match(html,/class="progress-rail"/);assert.match(app,/querySelector\('\.progress-rail'\)/);assert.doesNotMatch(app,/querySelector\('\.progress-track'\)/)});
+test('browser assets use the current cache version',()=>{assert.match(html,/styles\.css\?v=5\.9/);assert.match(html,/app\.js\?v=5\.9/);assert.match(html,/v5\.9/)});
+test('Headers Only controls are present and Sender starts unchecked',()=>{for(const id of ['headerFromName','headerLanguageCode','headerReturnPath','headerSubject','headerBoundary','headersAddSender'])assert.match(html,new RegExp(`id="${id}"`));assert.match(html,/id="headersAddSender" type="checkbox">/);assert.doesNotMatch(html,/id="headersAddSender"[^>]*checked/)});
+test('Clean Headers defaults, Received format, and mode locking are configured',()=>{const match=app.match(/const cleanDefaults=new Set\(\[([^\]]+)\]\)/);assert.ok(match);const defaults=[...match[1].matchAll(/'([^']+)'/g)].map(value=>value[1]);assert.deepEqual(defaults,['replaceDate','replaceTo','keepReceived','autoAddCc','keepReplyTo']);assert.match(app,/\['modernReceivedFormat','New Received Format'\]/);assert.ok(!defaults.includes('modernReceivedFormat'));assert.match(app,/function setModeLock\(value\)/);assert.match(app,/setModeLock\(true\);setBusy\(true,'Extraction in progress…'\)/)});
+test('four persistent gradient themes are available at the top',()=>{assert.match(html,/<html lang="en" data-theme="midnight">/);for(const theme of ['midnight','warm','ocean','forest'])assert.match(html,new RegExp(`data-theme="${theme}"`));assert.equal((html.match(/class="theme-choice/g)||[]).length,4);assert.match(app,/localStorage\.setItem\('cmh9_theme'/);assert.match(app,/localStorage\.getItem\('cmh9_theme'/);assert.match(css,/--panel-gradient:/);assert.match(css,/--accent-gradient:/)});
+test('footer keeps only the requested Telegram destination',()=>{assert.match(html,/href="https:\/\/t\.me\/ZakariaeSahli_cmh9"/);assert.match(html,/>@ZakariaeSahli_cmh9</);assert.doesNotMatch(html,/>Terms</);assert.doesNotMatch(html,/>Privacy</);assert.doesNotMatch(html,/>Support</)});

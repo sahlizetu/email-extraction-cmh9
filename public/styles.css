@@ -12,3 +12,18 @@ html[data-theme] body:before{background-image:var(--backdrop),linear-gradient(rg
 .theme-choice[data-theme="midnight"] i{background:linear-gradient(145deg,#111722,#8f98a9)}.theme-choice[data-theme="warm"] i{background:linear-gradient(145deg,#fff8eb,#c79e72)}.theme-choice[data-theme="ocean"] i{background:linear-gradient(145deg,#071d31,#55c9e9)}.theme-choice[data-theme="forest"] i{background:linear-gradient(145deg,#10231b,#84c39f)}
 .theme-choice.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-dim)}
 @media(max-width:620px){.topbar-right{gap:6px}.theme-picker{gap:3px;padding:4px}.theme-choice{width:24px;height:24px}.theme-choice i{width:15px;height:15px}}
+
+/* V5.9 gradient surfaces and Telegram footer */
+html[data-theme="midnight"]{--panel-gradient:linear-gradient(145deg,rgba(42,50,69,.97),rgba(20,26,39,.96) 62%,rgba(45,53,72,.93));--surface-gradient:linear-gradient(135deg,#353e52,#232b3b);--accent-gradient:linear-gradient(135deg,#899ab6,#c4cee0)}
+html[data-theme="warm"]{--panel-gradient:linear-gradient(145deg,rgba(255,255,255,.98),rgba(247,229,215,.97) 58%,rgba(236,216,229,.95));--surface-gradient:linear-gradient(135deg,#fff7ed,#efdce6);--accent-gradient:linear-gradient(135deg,#e99b77,#a978b5)}
+html[data-theme="ocean"]{--panel-gradient:linear-gradient(145deg,rgba(19,67,93,.97),rgba(7,30,49,.97) 62%,rgba(13,77,101,.94));--surface-gradient:linear-gradient(135deg,#164d6b,#0a304b);--accent-gradient:linear-gradient(135deg,#37b9df,#76e0cf)}
+html[data-theme="forest"]{--panel-gradient:linear-gradient(145deg,rgba(40,76,61,.97),rgba(16,35,28,.97) 62%,rgba(50,79,61,.94));--surface-gradient:linear-gradient(135deg,#315545,#1b382d);--accent-gradient:linear-gradient(135deg,#70bd96,#c0d98f)}
+.panel{background:var(--panel-gradient,var(--panel));backdrop-filter:blur(16px)}
+.status-pill,.connection-summary,.mode,.check,.btn-action,.theme-picker{background:var(--surface-gradient,var(--surface))}
+.brand-logo,.foot-logo,.btn-extract,.btn-action.download,.mode.selected .mode-icon{background:var(--accent-gradient,var(--accent));color:#101621}
+.theme-choice[data-theme="midnight"] i{background:linear-gradient(135deg,#0d111c 5%,#8d98ad 52%,#2f3850 95%)}
+.theme-choice[data-theme="warm"] i{background:linear-gradient(135deg,#f9c17a 5%,#df7c8f 52%,#8559a5 95%)}
+.theme-choice[data-theme="ocean"] i{background:linear-gradient(135deg,#05294d 5%,#22aace 52%,#74e0cd 95%)}
+.theme-choice[data-theme="forest"] i{background:linear-gradient(135deg,#102b20 5%,#5eae82 52%,#d1dd8e 95%)}
+.foot nav{display:flex}.telegram-link{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border:1px solid var(--accent);border-radius:999px;background:var(--accent-gradient,var(--accent));color:#101621;text-decoration:none;font:800 9px ui-monospace,monospace;box-shadow:0 7px 20px var(--accent-dim);transition:transform .16s,box-shadow .16s}.telegram-link:hover{transform:translateY(-2px);box-shadow:0 10px 26px var(--accent-dim)}.telegram-link svg{width:15px;height:15px;fill:currentColor}.telegram-link span{white-space:nowrap}
+@media(max-width:620px){.foot nav{display:flex}.telegram-link{padding:7px 9px}.telegram-link span{font-size:8px}}
