@@ -31,7 +31,7 @@ Credentials are never logged or written to disk. When “Keep me connected” is
 - **Clean Headers:** transforms applicable headers and preserves the raw MIME body.
 - **Text Only:** returns the parsed readable plain-text body; HTML is converted only when no text part is available.
 - **Newsletter Original:** returns the byte-identical raw source as `.eml`; all transformations are bypassed.
-- **Headers Only:** returns transformed headers with no body.
+- **Headers Only:** returns cleaned headers with no body using dedicated From Name, Language Code, Return Path, Subject, and Boundary parameters. Add Sender is optional and off by default.
 - **Body Only:** returns the raw body bytes after the RFC header separator, with no message headers.
 - **Received Only:** returns all `Received` fields in their original order, including folded continuation lines.
 
