@@ -1,0 +1,12 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.join(__dirname,'..');
+const server=fs.readFileSync(path.join(root,'server.js'),'utf8');
+const html=fs.readFileSync(path.join(root,'public','index.html'),'utf8');
+const app=fs.readFileSync(path.join(root,'public','app.js'),'utf8');
+test('Telegram login and approval endpoints are protected and configured',()=>{for(const route of ['/api/auth/status','/api/auth/telegram','/api/auth/refresh','/api/auth/logout'])assert.match(server,new RegExp(route.replaceAll('/','\\/')));assert.match(server,/getChatMember/);assert.match(server,/verifyTelegramLogin/);assert.match(server,/app\.use\('\/api', async/)});
+test('Telegram auth gate and approval interface are rendered',()=>{for(const id of ['authGate','appShell','telegramWidget','authPending','joinTelegramGroup','checkApprovalButton','telegramLogoutButton'])assert.match(html,new RegExp(`id="${id}"`));assert.match(app,/telegram-widget\.js\?22/);assert.match(app,/window\.onTelegramAuth/);assert.match(app,/api\('\/api\/auth\/status'\)/)});
+test('Telegram secrets stay in environment variables',()=>{assert.match(server,/process\.env\.TELEGRAM_BOT_TOKEN/);assert.doesNotMatch(server,/123456789:replace-with-botfather-token/);assert.doesNotMatch(html,/TELEGRAM_BOT_TOKEN/)});
