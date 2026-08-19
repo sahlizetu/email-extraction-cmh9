@@ -28,6 +28,8 @@ Credentials are never logged or written to disk. When “Keep me connected” is
 
 ## Extraction behavior
 
+`Delivered-To`, all `ARC-*` fields, `Return-Path`, `Authentication-Results`, and `DKIM-Signature` are preserved only in **Newsletter Original**. Every other mode removes or inherently excludes these outer message headers.
+
 - **Clean Headers:** transforms applicable headers and preserves the raw MIME body.
 - **Text Only:** returns the parsed readable plain-text body; HTML is converted only when no text part is available.
 - **Newsletter Original:** returns the byte-identical raw source as `.eml`; all transformations are bypassed.
