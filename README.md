@@ -28,6 +28,8 @@ Credentials are never logged or written to disk. When “Keep me connected” is
 
 ## Interface themes
 
+All theme backgrounds use a single smooth professional linear gradient with no patterns, dots, checks, stripes, or decorative shapes.
+
 Choose Solar Light, Pastel, Sky, or Night from the theme controls in the top bar. Solar Light is the default, and the selected theme is remembered in the browser.
 
 The footer shows only a Telegram logo; clicking it opens `@ZakariaeSahli_cmh9`.
