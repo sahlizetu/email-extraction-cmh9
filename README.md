@@ -28,9 +28,9 @@ Credentials are never logged or written to disk. When “Keep me connected” is
 
 ## Interface themes
 
-Choose Midnight, Sunset, Ocean, or Forest from the theme controls in the top bar. Midnight is the default, and the selected theme is remembered in the browser.
+Choose Solar Light, Pastel, Sky, or Night from the theme controls in the top bar. Solar Light is the default, and the selected theme is remembered in the browser.
 
-The footer links directly to Telegram at `@ZakariaeSahli_cmh9`.
+The footer shows only a Telegram logo; clicking it opens `@ZakariaeSahli_cmh9`.
 
 ## Extraction behavior
 
