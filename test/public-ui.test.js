@@ -12,9 +12,9 @@ test('progress bar selector matches the rendered UI',()=>{
   assert.doesNotMatch(app,/querySelector\('\.progress-track'\)/);
 });
 test('browser assets use the current cache version',()=>{
-  assert.match(html,/styles\.css\?v=5\.3/);
-  assert.match(html,/app\.js\?v=5\.3/);
-  assert.match(html,/v5\.3/);
+  assert.match(html,/styles\.css\?v=5\.4/);
+  assert.match(html,/app\.js\?v=5\.4/);
+  assert.match(html,/v5\.4/);
 });
 test('Headers Only controls are present and Sender starts unchecked',()=>{
   for(const id of ['headerFromName','headerLanguageCode','headerReturnPath','headerSubject','headerBoundary','headersAddSender']) assert.match(html,new RegExp(`id="${id}"`));
