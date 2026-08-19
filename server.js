@@ -8,7 +8,6 @@ const helmet = require('helmet');
 const { ImapFlow } = require('imapflow');
 const { extractEmail, sanitizeFilename, MODES } = require('./lib/email-engine');
 const { sealCredentials, openCredentials } = require('./lib/secure-token');
-const { verifyTelegramLogin, createTelegramSessionToken, openTelegramSessionToken, isApprovedMember } = require('./lib/telegram-auth');
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
@@ -19,20 +18,13 @@ const COMBINED_SEPARATOR = Buffer.from('\r\n__SEP__\r\n', 'utf8');
 const SESSION_SECRET = String(process.env.SESSION_SECRET || '').trim();
 const REMEMBER_AVAILABLE = SESSION_SECRET.length >= 32;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
-const TELEGRAM_BOT_TOKEN = String(process.env.TELEGRAM_BOT_TOKEN || '').trim();
-const TELEGRAM_BOT_USERNAME = String(process.env.TELEGRAM_BOT_USERNAME || '').trim().replace(/^@/, '').replace(/[^A-Za-z0-9_]/g, '');
-const TELEGRAM_APPROVAL_CHAT_ID = String(process.env.TELEGRAM_APPROVAL_CHAT_ID || '').trim();
-const TELEGRAM_JOIN_URL = /^https:\/\/(t\.me|telegram\.me)\//i.test(String(process.env.TELEGRAM_JOIN_URL || '').trim()) ? String(process.env.TELEGRAM_JOIN_URL).trim() : '';
-const TELEGRAM_CONFIGURED = Boolean(REMEMBER_AVAILABLE && TELEGRAM_BOT_TOKEN && TELEGRAM_BOT_USERNAME && TELEGRAM_APPROVAL_CHAT_ID);
-const TELEGRAM_AUTH_TTL_SECONDS = 30 * 24 * 60 * 60;
-const TELEGRAM_RECHECK_MS = 5 * 60 * 1000;
 const sessions = new Map();
 const jobs = new Map();
 const encryptionKey = crypto.randomBytes(32);
 
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
-app.use(helmet({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], styleSrc: ["'self'"], scriptSrc: ["'self'", 'https://telegram.org'], frameSrc: ["'self'", 'https://oauth.telegram.org', 'https://telegram.org'], imgSrc: ["'self'", 'data:', 'https://t.me', 'https://*.telegram.org'], connectSrc: ["'self'"] } } }));
+app.use(helmet({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], styleSrc: ["'self'"], scriptSrc: ["'self'"], imgSrc: ["'self'", 'data:'], connectSrc: ["'self'"] } } }));
 app.use(express.json({ limit: '64kb' }));
 app.use('/api', (req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
 
@@ -68,7 +60,7 @@ function decrypt(blob) {
 }
 function createSession(res, restoredCredentials = null) {
   const id = crypto.randomBytes(24).toString('base64url');
-  const session = { id, touchedAt: Date.now(), credentials: null, folders: [], result: null, job: null, restored: Boolean(restoredCredentials), telegramUser: null, pendingTelegramUser: null, telegramCheckedAt: 0 };
+  const session = { id, touchedAt: Date.now(), credentials: null, folders: [], result: null, job: null, restored: Boolean(restoredCredentials) };
   if (restoredCredentials) session.credentials = { email: restoredCredentials.email, password: encrypt(restoredCredentials.password) };
   sessions.set(id, session);
   appendCookie(res, cookie('cmh9_session', id, Math.floor(SESSION_TTL / 1000)));
@@ -86,11 +78,6 @@ function getSession(req, res, create = true) {
     else clearCookie(res, 'cmh9_auth');
   }
   if (!session && create) session = createSession(res);
-  if (session && !session.telegramUser && REMEMBER_AVAILABLE && cookies.cmh9_telegram) {
-    const user = openTelegramSessionToken(cookies.cmh9_telegram, SESSION_SECRET);
-    if (user) session.telegramUser = user;
-    else clearCookie(res, 'cmh9_telegram');
-  }
   if (session) session.touchedAt = Date.now();
   return session;
 }
@@ -137,76 +124,7 @@ async function refreshSessionFolders(session) {
   finally { await closeClient(client); }
 }
 
-async function telegramApi(method, body) {
-  const response = await timeout(fetch('https://api.telegram.org/bot' + TELEGRAM_BOT_TOKEN + '/' + method, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
-  }), 12000, 'Telegram verification timed out.');
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok || !data.ok) throw Object.assign(new Error('Telegram could not verify group membership.'), { status: 503 });
-  return data.result;
-}
-async function checkTelegramMembership(userId) {
-  const member = await telegramApi('getChatMember', { chat_id: TELEGRAM_APPROVAL_CHAT_ID, user_id: Number(userId) });
-  return isApprovedMember(member);
-}
-function telegramPublicStatus(session, extra = {}) {
-  return { configured: TELEGRAM_CONFIGURED, botUsername: TELEGRAM_BOT_USERNAME || null, authenticated: Boolean(session?.telegramUser), pending: Boolean(session?.pendingTelegramUser), user: session?.telegramUser || session?.pendingTelegramUser || null, joinUrl: TELEGRAM_JOIN_URL || null, ...extra };
-}
-function approveTelegramSession(session, user, res) {
-  session.telegramUser = user; session.pendingTelegramUser = null; session.telegramCheckedAt = Date.now();
-  appendCookie(res, cookie('cmh9_telegram', createTelegramSessionToken(user, SESSION_SECRET, TELEGRAM_AUTH_TTL_SECONDS), TELEGRAM_AUTH_TTL_SECONDS));
-}
-
-app.get('/api/health', (req, res) => res.json({ ok: true, service: 'email-extraction-cmh9', version: '7.0.0', rememberAvailable: REMEMBER_AVAILABLE, telegramConfigured: TELEGRAM_CONFIGURED }));
-
-app.get('/api/auth/status', async (req, res) => {
-  const session = getSession(req, res);
-  if (!TELEGRAM_CONFIGURED) return res.json(telegramPublicStatus(session, { setupRequired: true }));
-  if (session.telegramUser && Date.now() - session.telegramCheckedAt > TELEGRAM_RECHECK_MS) {
-    try {
-      if (await checkTelegramMembership(session.telegramUser.id)) session.telegramCheckedAt = Date.now();
-      else { session.pendingTelegramUser = session.telegramUser; session.telegramUser = null; clearCookie(res, 'cmh9_telegram'); }
-    } catch (error) { return res.status(503).json({ error: error.message }); }
-  }
-  res.json(telegramPublicStatus(session));
-});
-app.post('/api/auth/telegram', async (req, res) => {
-  if (!TELEGRAM_CONFIGURED) return res.status(503).json({ error: 'Telegram login is not configured on the server.' });
-  const session = getSession(req, res);
-  try {
-    const user = verifyTelegramLogin(req.body, TELEGRAM_BOT_TOKEN);
-    if (await checkTelegramMembership(user.id)) approveTelegramSession(session, user, res);
-    else { session.telegramUser = null; session.pendingTelegramUser = user; session.telegramCheckedAt = Date.now(); clearCookie(res, 'cmh9_telegram'); }
-    res.json(telegramPublicStatus(session));
-  } catch (error) { res.status(error.status || 401).json({ error: error.message || 'Telegram login failed.' }); }
-});
-app.post('/api/auth/refresh', async (req, res) => {
-  if (!TELEGRAM_CONFIGURED) return res.status(503).json({ error: 'Telegram login is not configured on the server.' });
-  const session = getSession(req, res); const user = session.pendingTelegramUser || session.telegramUser;
-  if (!user) return res.status(401).json({ error: 'Sign in with Telegram first.' });
-  try {
-    if (await checkTelegramMembership(user.id)) approveTelegramSession(session, user, res);
-    else { session.telegramUser = null; session.pendingTelegramUser = user; clearCookie(res, 'cmh9_telegram'); }
-    res.json(telegramPublicStatus(session));
-  } catch (error) { res.status(error.status || 503).json({ error: error.message }); }
-});
-app.post('/api/auth/logout', (req, res) => {
-  const session = getSession(req, res, false); if (session) sessions.delete(session.id);
-  for (const name of ['cmh9_session', 'cmh9_auth', 'cmh9_telegram']) clearCookie(res, name);
-  res.json({ ok: true });
-});
-app.use('/api', async (req, res, next) => {
-  if (!TELEGRAM_CONFIGURED) return res.status(503).json({ error: 'Telegram login setup is required.' });
-  const session = getSession(req, res);
-  if (!session.telegramUser) return res.status(401).json({ error: 'Sign in with Telegram first.', pending: Boolean(session.pendingTelegramUser), joinUrl: TELEGRAM_JOIN_URL || null });
-  if (Date.now() - session.telegramCheckedAt > TELEGRAM_RECHECK_MS) {
-    try {
-      if (!await checkTelegramMembership(session.telegramUser.id)) { session.pendingTelegramUser = session.telegramUser; session.telegramUser = null; clearCookie(res, 'cmh9_telegram'); return res.status(403).json({ error: 'Admin approval is required.', pending: true, joinUrl: TELEGRAM_JOIN_URL || null }); }
-      session.telegramCheckedAt = Date.now();
-    } catch (error) { return res.status(503).json({ error: error.message }); }
-  }
-  next();
-});
+app.get('/api/health', (req, res) => res.json({ ok: true, service: 'email-extraction-cmh9', version: '6.1.0', rememberAvailable: REMEMBER_AVAILABLE }));
 
 app.post('/api/connect', async (req, res) => {
   const email = String(req.body.email || '').trim();
@@ -334,5 +252,5 @@ setInterval(() => {
 }, 60_000).unref();
 process.on('unhandledRejection', error => console.error('[unhandledRejection]', error?.stack || error));
 process.on('uncaughtException', error => console.error('[uncaughtException]', error?.stack || error));
-if (require.main === module) app.listen(PORT, '0.0.0.0', () => console.log(`Email Extraction CMH9 v7.0.0 running on http://0.0.0.0:${PORT}`));
+if (require.main === module) app.listen(PORT, '0.0.0.0', () => console.log(`Email Extraction CMH9 v6.1.0 running on http://0.0.0.0:${PORT}`));
 module.exports = app;
