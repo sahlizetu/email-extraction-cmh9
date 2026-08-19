@@ -26,6 +26,10 @@ Open `http://localhost:3000`.
 
 Credentials are never logged or written to disk. When “Keep me connected” is enabled, the Gmail address and App Password are protected with AES-256-GCM inside a Secure, HTTP-only, SameSite cookie for 30 days. Set a strong `SESSION_SECRET` in Railway so the encrypted login survives server restarts. Logging out destroys the cookie.
 
+## Interface themes
+
+Choose Midnight, Warm, Ocean, or Forest from the theme controls in the top bar. Midnight is the default, and the selected theme is remembered in the browser.
+
 ## Extraction behavior
 
 `Delivered-To`, all `ARC-*` fields, `Return-Path`, `Authentication-Results`, and `DKIM-Signature` are preserved only in **Newsletter Original**. Every other mode removes or inherently excludes these outer message headers.

@@ -12,9 +12,9 @@ test('progress bar selector matches the rendered UI',()=>{
   assert.doesNotMatch(app,/querySelector\('\.progress-track'\)/);
 });
 test('browser assets use the current cache version',()=>{
-  assert.match(html,/styles\.css\?v=5\.7/);
-  assert.match(html,/app\.js\?v=5\.7/);
-  assert.match(html,/v5\.7/);
+  assert.match(html,/styles\.css\?v=5\.8/);
+  assert.match(html,/app\.js\?v=5\.8/);
+  assert.match(html,/v5\.8/);
 });
 test('Headers Only controls are present and Sender starts unchecked',()=>{
   for(const id of ['headerFromName','headerLanguageCode','headerReturnPath','headerSubject','headerBoundary','headersAddSender']) assert.match(html,new RegExp(`id="${id}"`));
@@ -30,4 +30,11 @@ test('Clean Headers defaults, Received format, and mode locking are configured',
   assert.ok(!defaults.includes('modernReceivedFormat'));
   assert.match(app,/function setModeLock\(value\)/);
   assert.match(app,/setModeLock\(true\);setBusy\(true,'Extraction in progress…'\)/);
+});
+test('four persistent themes are available at the top',()=>{
+  assert.match(html,/<html lang="en" data-theme="midnight">/);
+  for(const theme of ['midnight','warm','ocean','forest']) assert.match(html,new RegExp(`data-theme="${theme}"`));
+  assert.equal((html.match(/class="theme-choice/g)||[]).length,4);
+  assert.match(app,/localStorage\.setItem\('cmh9_theme'/);
+  assert.match(app,/localStorage\.getItem\('cmh9_theme'/);
 });
