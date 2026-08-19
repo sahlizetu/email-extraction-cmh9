@@ -5,7 +5,6 @@ const path = require('path');
 const { once } = require('events');
 const express = require('express');
 const helmet = require('helmet');
-const { rateLimit } = require('express-rate-limit');
 const { ImapFlow } = require('imapflow');
 const { extractEmail, sanitizeFilename, MODES } = require('./lib/email-engine');
 const { sealCredentials, openCredentials } = require('./lib/secure-token');
@@ -20,6 +19,7 @@ const SESSION_SECRET = String(process.env.SESSION_SECRET || '').trim();
 const REMEMBER_AVAILABLE = SESSION_SECRET.length >= 32;
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const sessions = new Map();
+const jobs = new Map();
 const encryptionKey = crypto.randomBytes(32);
 
 app.disable('x-powered-by');
@@ -27,8 +27,6 @@ app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], styleSrc: ["'self'"], scriptSrc: ["'self'"], imgSrc: ["'self'", 'data:'], connectSrc: ["'self'"] } } }));
 app.use(express.json({ limit: '64kb' }));
 app.use('/api', (req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
-app.use('/api/connect', rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: true, legacyHeaders: false }));
-app.use('/api', rateLimit({ windowMs: 60 * 1000, limit: 600, standardHeaders: true, legacyHeaders: false }));
 
 function parseCookies(value = '') {
   const output = {};
@@ -126,7 +124,7 @@ async function refreshSessionFolders(session) {
   finally { await closeClient(client); }
 }
 
-app.get('/api/health', (req, res) => res.json({ ok: true, service: 'email-extraction-cmh9', version: '5.0.0', rememberAvailable: REMEMBER_AVAILABLE }));
+app.get('/api/health', (req, res) => res.json({ ok: true, service: 'email-extraction-cmh9', version: '5.2.0', rememberAvailable: REMEMBER_AVAILABLE }));
 
 app.post('/api/connect', async (req, res) => {
   const email = String(req.body.email || '').trim();
@@ -208,13 +206,22 @@ app.post('/api/extract/start', (req, res) => {
   const now = Date.now();
   const job = { id: crypto.randomBytes(12).toString('base64url'), status: 'processing', phase: 'Connecting to Gmail', progress: 1, processed: 0, total: limit, error: null, createdAt: now, updatedAt: now };
   session.job = job; session.result = null;
+  jobs.set(job.id, { job, sessionId: session.id, createdAt: now });
+  console.log(`[extract:${job.id}] accepted ${mode} ${folder} ${start}:${limit}`);
   res.status(202).json({ jobId: job.id });
   setTimeout(() => { void runExtraction(session, job, { folder, start, limit, mode, options: req.body.options || {} }); }, 0);
 });
 app.get('/api/extract/progress', (req, res) => {
-  const session = getSession(req, res, false); const job = session?.job;
-  if (!job || job.id !== String(req.query.jobId || '')) return res.status(404).json({ error: 'Extraction job not found. Reconnect Gmail and retry.' });
+  const id = String(req.query.jobId || '');
+  const job = jobs.get(id)?.job;
+  if (!job) return res.status(404).json({ error: 'Extraction job not found. Reconnect Gmail and retry.' });
   res.json(publicJob(job));
+});
+app.post('/api/extract/reset', (req, res) => {
+  const session = getSession(req, res, false);
+  if (session?.job?.status === 'processing') { session.job.status = 'failed'; session.job.phase = 'Cancelled'; session.job.error = 'Extraction was reset. Please retry.'; }
+  session && (session.job = null);
+  res.json({ ok: true });
 });
 
 async function sendCombined(result, res, download) {
@@ -235,8 +242,15 @@ app.get('/', (req, res) => { res.setHeader('Cache-Control', 'no-store'); res.sen
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'], maxAge: IS_PRODUCTION ? '5m' : 0 }));
 app.use((req, res) => { res.setHeader('Cache-Control', 'no-store'); res.sendFile(path.join(__dirname, 'public', 'index.html')); });
 
-setInterval(() => { const cutoff = Date.now() - SESSION_TTL; for (const [id, session] of sessions) if (session.touchedAt < cutoff && session.job?.status !== 'processing') sessions.delete(id); }, 60_000).unref();
+setInterval(() => {
+  const cutoff = Date.now() - SESSION_TTL;
+  for (const [id, session] of sessions) if (session.touchedAt < cutoff && session.job?.status !== 'processing') sessions.delete(id);
+  for (const [id, entry] of jobs) {
+    if (entry.job.status === 'processing' && Date.now() - entry.job.updatedAt > 10 * 60 * 1000) { entry.job.status = 'failed'; entry.job.phase = 'Extraction timed out'; entry.job.error = 'Extraction timed out. Reconnect Gmail and retry.'; }
+    if (Date.now() - entry.createdAt > SESSION_TTL) jobs.delete(id);
+  }
+}, 60_000).unref();
 process.on('unhandledRejection', error => console.error('[unhandledRejection]', error?.stack || error));
 process.on('uncaughtException', error => console.error('[uncaughtException]', error?.stack || error));
-if (require.main === module) app.listen(PORT, '0.0.0.0', () => console.log(`Email Extraction CMH9 v5.0.0 running on http://0.0.0.0:${PORT}`));
+if (require.main === module) app.listen(PORT, '0.0.0.0', () => console.log(`Email Extraction CMH9 v5.2.0 running on http://0.0.0.0:${PORT}`));
 module.exports = app;
