@@ -124,7 +124,7 @@ async function refreshSessionFolders(session) {
   finally { await closeClient(client); }
 }
 
-app.get('/api/health', (req, res) => res.json({ ok: true, service: 'email-extraction-cmh9', version: '5.5.0', rememberAvailable: REMEMBER_AVAILABLE }));
+app.get('/api/health', (req, res) => res.json({ ok: true, service: 'email-extraction-cmh9', version: '5.6.0', rememberAvailable: REMEMBER_AVAILABLE }));
 
 app.post('/api/connect', async (req, res) => {
   const email = String(req.body.email || '').trim();
@@ -252,5 +252,5 @@ setInterval(() => {
 }, 60_000).unref();
 process.on('unhandledRejection', error => console.error('[unhandledRejection]', error?.stack || error));
 process.on('uncaughtException', error => console.error('[uncaughtException]', error?.stack || error));
-if (require.main === module) app.listen(PORT, '0.0.0.0', () => console.log(`Email Extraction CMH9 v5.5.0 running on http://0.0.0.0:${PORT}`));
+if (require.main === module) app.listen(PORT, '0.0.0.0', () => console.log(`Email Extraction CMH9 v5.6.0 running on http://0.0.0.0:${PORT}`));
 module.exports = app;
