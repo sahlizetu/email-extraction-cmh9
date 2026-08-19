@@ -12,20 +12,22 @@ test('progress bar selector matches the rendered UI',()=>{
   assert.doesNotMatch(app,/querySelector\('\.progress-track'\)/);
 });
 test('browser assets use the current cache version',()=>{
-  assert.match(html,/styles\.css\?v=5\.6/);
-  assert.match(html,/app\.js\?v=5\.6/);
-  assert.match(html,/v5\.6/);
+  assert.match(html,/styles\.css\?v=5\.7/);
+  assert.match(html,/app\.js\?v=5\.7/);
+  assert.match(html,/v5\.7/);
 });
 test('Headers Only controls are present and Sender starts unchecked',()=>{
   for(const id of ['headerFromName','headerLanguageCode','headerReturnPath','headerSubject','headerBoundary','headersAddSender']) assert.match(html,new RegExp(`id="${id}"`));
   assert.match(html,/id="headersAddSender" type="checkbox">/);
   assert.doesNotMatch(html,/id="headersAddSender"[^>]*checked/);
 });
-test('Clean Headers defaults and mode locking are configured',()=>{
+test('Clean Headers defaults, Received format, and mode locking are configured',()=>{
   const match=app.match(/const cleanDefaults=new Set\(\[([^\]]+)\]\)/);
   assert.ok(match);
   const defaults=[...match[1].matchAll(/'([^']+)'/g)].map(value=>value[1]);
   assert.deepEqual(defaults,['replaceDate','replaceTo','keepReceived','autoAddCc','keepReplyTo']);
+  assert.match(app,/\['modernReceivedFormat','New Received Format'\]/);
+  assert.ok(!defaults.includes('modernReceivedFormat'));
   assert.match(app,/function setModeLock\(value\)/);
   assert.match(app,/setModeLock\(true\);setBusy\(true,'Extraction in progress…'\)/);
 });

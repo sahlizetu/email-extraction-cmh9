@@ -30,7 +30,7 @@ Credentials are never logged or written to disk. When “Keep me connected” is
 
 `Delivered-To`, all `ARC-*` fields, `Return-Path`, `Authentication-Results`, and `DKIM-Signature` are preserved only in **Newsletter Original**. Every other mode removes or inherently excludes these outer message headers.
 
-- **Clean Headers:** transforms applicable headers and preserves the raw MIME body.
+- **Clean Headers:** transforms applicable headers and preserves the raw MIME body. Received fields keep their original folded Gmail layout by default; enable New Received Format to unfold each field onto one line.
 - **Text Only:** returns the parsed readable plain-text body; HTML is converted only when no text part is available.
 - **Newsletter Original:** returns the byte-identical raw source as `.eml`; all transformations are bypassed.
 - **Headers Only:** returns cleaned headers with no body using dedicated From Name, Language Code, Return Path, Subject, and Boundary parameters. Add Sender is optional and off by default.

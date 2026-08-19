@@ -7,7 +7,7 @@ const modes=[
  {id:'body',icon:'▤',title:'Body Only',description:'Raw HTML/text body, no headers'},
  {id:'received',icon:'📡',title:'Received Only',description:'Extract Received headers only'}
 ];
-const optionDefs=[['replaceDate','Replace Date'],['replaceTo','Replace To'],['keepReceived','Keep Received'],['keepReplyTo','Keep Reply-To'],['autoAddCc','Auto Add Cc'],['addSender','Add Sender'],['fromId','From [ID]'],['subjectId','Subject [ID]']];
+const optionDefs=[['replaceDate','Replace Date'],['replaceTo','Replace To'],['keepReceived','Keep Received'],['modernReceivedFormat','New Received Format'],['keepReplyTo','Keep Reply-To'],['autoAddCc','Auto Add Cc'],['addSender','Add Sender'],['fromId','From [ID]'],['subjectId','Subject [ID]']];
 const cleanDefaults=new Set(['replaceDate','replaceTo','keepReceived','autoAddCc','keepReplyTo']);
 const $=id=>document.getElementById(id); let selectedMode='clean'; let connected=false; let busy=false; let activeJobId=null;
 function renderModes(){$('modes').innerHTML=modes.map(m=>`<label class="mode ${m.id===selectedMode?'selected':''}"><input type="radio" name="mode" value="${m.id}" ${m.id===selectedMode?'checked':''}><span class="mode-icon">${m.icon}</span><span class="mode-copy"><strong>${m.title}</strong><small>${m.description}</small></span><i class="radio"></i></label>`).join('');document.querySelectorAll('[name=mode]').forEach(r=>r.addEventListener('change',()=>{selectedMode=r.value;renderModes();syncModeOptions()}));}

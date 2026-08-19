@@ -1,0 +1,7 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const {transformHeaders}=require('../lib/email-engine');
+const headers=`Received: by gateway-a with SMTP id abc;\r\n\tWed, 3 Jul 2024 12:44:09 -0700 (PDT)\r\nReceived: from sender.example ([208.117.50.44])\r\n\tby mx.google.com with ESMTPS id xyz\r\n\tfor <inbox@gmail.com>\r\n\t(version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256);\r\n\tWed, 03 Jul 2024 12:44:09 -0700 (PDT)\r\nDate: Wed, 3 Jul 2024 19:44:09 +0000\r\nFrom: Brand <mail@example.com>\r\nTo: inbox@gmail.com`;
+test('Clean Headers preserves old folded Received format by default',()=>{const output=transformHeaders(headers,{keepReceived:true,domainReplacement:''});assert.match(output,/Received: by gateway-a with SMTP id abc;\r\n\tWed, 3 Jul 2024 12:44:09 -0700 \(PDT\)/);assert.match(output,/Received: from sender\.example \(\[208\.117\.50\.44\]\)\r\n\tby mx\.google\.com with ESMTPS id xyz\r\n\tfor <inbox@gmail\.com>/)});
+test('New Received Format unfolds each Received header when selected',()=>{const output=transformHeaders(headers,{keepReceived:true,modernReceivedFormat:true,domainReplacement:''});assert.match(output,/Received: by gateway-a with SMTP id abc; Wed, 3 Jul 2024 12:44:09 -0700 \(PDT\)/);assert.match(output,/Received: from sender\.example \(\[208\.117\.50\.44\]\) by mx\.google\.com with ESMTPS id xyz for <inbox@gmail\.com>/);assert.doesNotMatch(output,/^\tby mx\.google\.com/m)});
