@@ -26,6 +26,21 @@ Open `http://localhost:3000`.
 
 Credentials are never logged or written to disk. When “Keep me connected” is enabled, the Gmail address and App Password are protected with AES-256-GCM inside a Secure, HTTP-only, SameSite cookie for 30 days. Set a strong `SESSION_SECRET` in Railway so the encrypted login survives server restarts. Logging out destroys the cookie.
 
+## Telegram login and approval
+
+Access is protected by Telegram Login. The server verifies Telegram's signed payload, checks membership in a private approval group, and stores a signed 30-day login cookie. First-time users see a pending screen until an admin approves their join request in Telegram. The bot must be an administrator in the approval group.
+
+Required Railway variables:
+
+```env
+TELEGRAM_BOT_TOKEN=...
+TELEGRAM_BOT_USERNAME=...
+TELEGRAM_APPROVAL_CHAT_ID=-100...
+TELEGRAM_JOIN_URL=https://t.me/+...
+```
+
+Configure the deployed Railway domain with BotFather `/setdomain`. Never commit the bot token.
+
 ## Interface themes
 
 All theme backgrounds use a single smooth professional linear gradient with no patterns, dots, checks, stripes, or decorative shapes.
