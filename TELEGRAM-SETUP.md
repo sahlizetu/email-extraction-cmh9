@@ -54,7 +54,7 @@ SESSION_SECRET=your-existing-64-character-secret
 ## 5. Deploy and test
 
 1. Redeploy the Railway service.
-2. Confirm `/api/health` shows `version: "7.0.2"` and `telegramConfigured: true`.
+2. Confirm `/api/health` shows `version: "7.1.0"` and `telegramConfigured: true`.
 3. Open the application in a private browser window.
 4. Sign in with Telegram.
 5. A user who is not in the group sees “Waiting for admin approval”.

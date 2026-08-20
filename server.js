@@ -157,7 +157,7 @@ function approveTelegramSession(session, user, res) {
   appendCookie(res, cookie('cmh9_telegram', createTelegramSessionToken(user, SESSION_SECRET, TELEGRAM_AUTH_TTL_SECONDS), TELEGRAM_AUTH_TTL_SECONDS));
 }
 
-app.get('/api/health', (req, res) => res.json({ ok: true, service: 'email-extraction-cmh9', version: '7.0.2', rememberAvailable: REMEMBER_AVAILABLE, telegramConfigured: TELEGRAM_CONFIGURED }));
+app.get('/api/health', (req, res) => res.json({ ok: true, service: 'email-extraction-cmh9', version: '7.1.0', rememberAvailable: REMEMBER_AVAILABLE, telegramConfigured: TELEGRAM_CONFIGURED }));
 
 app.get('/api/auth/status', async (req, res) => {
   const session = getSession(req, res);
@@ -344,5 +344,5 @@ setInterval(() => {
 }, 60_000).unref();
 process.on('unhandledRejection', error => console.error('[unhandledRejection]', error?.stack || error));
 process.on('uncaughtException', error => console.error('[uncaughtException]', error?.stack || error));
-if (require.main === module) app.listen(PORT, '0.0.0.0', () => console.log(`Email Extraction CMH9 v7.0.2 running on http://0.0.0.0:${PORT}`));
+if (require.main === module) app.listen(PORT, '0.0.0.0', () => console.log(`Email Extraction CMH9 v7.1.0 running on http://0.0.0.0:${PORT}`));
 module.exports = app;

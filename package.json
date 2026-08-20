@@ -1,6 +1,6 @@
 {
   "name": "email-extraction-cmh9",
-  "version": "7.0.2",
+  "version": "7.1.0",
   "private": true,
   "description": "Production Gmail IMAP extractor with mode-specific MIME output and safe header transformations",
   "main": "server.js",
