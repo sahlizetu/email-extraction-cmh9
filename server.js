@@ -32,7 +32,7 @@ const encryptionKey = crypto.randomBytes(32);
 
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
-app.use(helmet({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], styleSrc: ["'self'"], scriptSrc: ["'self'", 'https://telegram.org'], frameSrc: ["'self'", 'https://oauth.telegram.org', 'https://telegram.org'], imgSrc: ["'self'", 'data:', 'https://t.me', 'https://*.telegram.org'], connectSrc: ["'self'"] } } }));
+app.use(helmet({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], styleSrc: ["'self'"], scriptSrc: ["'self'", 'https://telegram.org', 'https://oauth.telegram.org', 'https://*.telegram.org'], frameSrc: ["'self'", 'https://telegram.org', 'https://oauth.telegram.org', 'https://*.telegram.org'], imgSrc: ["'self'", 'data:', 'https://t.me', 'https://telegram.org', 'https://*.telegram.org'], connectSrc: ["'self'", 'https://telegram.org', 'https://oauth.telegram.org', 'https://*.telegram.org'] } } }));
 app.use(express.json({ limit: '64kb' }));
 app.use('/api', (req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next(); });
 
@@ -157,7 +157,7 @@ function approveTelegramSession(session, user, res) {
   appendCookie(res, cookie('cmh9_telegram', createTelegramSessionToken(user, SESSION_SECRET, TELEGRAM_AUTH_TTL_SECONDS), TELEGRAM_AUTH_TTL_SECONDS));
 }
 
-app.get('/api/health', (req, res) => res.json({ ok: true, service: 'email-extraction-cmh9', version: '7.0.0', rememberAvailable: REMEMBER_AVAILABLE, telegramConfigured: TELEGRAM_CONFIGURED }));
+app.get('/api/health', (req, res) => res.json({ ok: true, service: 'email-extraction-cmh9', version: '7.0.1', rememberAvailable: REMEMBER_AVAILABLE, telegramConfigured: TELEGRAM_CONFIGURED }));
 
 app.get('/api/auth/status', async (req, res) => {
   const session = getSession(req, res);
@@ -334,5 +334,5 @@ setInterval(() => {
 }, 60_000).unref();
 process.on('unhandledRejection', error => console.error('[unhandledRejection]', error?.stack || error));
 process.on('uncaughtException', error => console.error('[uncaughtException]', error?.stack || error));
-if (require.main === module) app.listen(PORT, '0.0.0.0', () => console.log(`Email Extraction CMH9 v7.0.0 running on http://0.0.0.0:${PORT}`));
+if (require.main === module) app.listen(PORT, '0.0.0.0', () => console.log(`Email Extraction CMH9 v7.0.1 running on http://0.0.0.0:${PORT}`));
 module.exports = app;
