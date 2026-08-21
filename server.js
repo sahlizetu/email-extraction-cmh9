@@ -157,7 +157,7 @@ function approveTelegramSession(session, user, res) {
   appendCookie(res, cookie('cmh9_telegram', createTelegramSessionToken(user, SESSION_SECRET, TELEGRAM_AUTH_TTL_SECONDS), TELEGRAM_AUTH_TTL_SECONDS));
 }
 
-app.get('/api/health', (req, res) => res.json({ ok: true, service: 'email-extraction-cmh9', version: '7.1.0', rememberAvailable: REMEMBER_AVAILABLE, telegramConfigured: TELEGRAM_CONFIGURED }));
+app.get('/api/health', (req, res) => res.json({ ok: true, service: 'email-extraction-cmh9', version: '7.1.1', rememberAvailable: REMEMBER_AVAILABLE, telegramConfigured: TELEGRAM_CONFIGURED }));
 
 app.get('/api/auth/status', async (req, res) => {
   const session = getSession(req, res);
@@ -331,7 +331,7 @@ app.get('/api/result-text', async (req, res) => { const result = getSession(req,
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'API endpoint not found.' }));
 app.get('/', (req, res) => { res.setHeader('Cache-Control', 'no-store'); res.sendFile(path.join(__dirname, 'public', 'index.html')); });
-app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'], maxAge: IS_PRODUCTION ? '5m' : 0 }));
+app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'], maxAge: 0, etag: false, setHeaders: res => res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate') }));
 app.use((req, res) => { res.setHeader('Cache-Control', 'no-store'); res.sendFile(path.join(__dirname, 'public', 'index.html')); });
 
 setInterval(() => {
@@ -344,5 +344,5 @@ setInterval(() => {
 }, 60_000).unref();
 process.on('unhandledRejection', error => console.error('[unhandledRejection]', error?.stack || error));
 process.on('uncaughtException', error => console.error('[uncaughtException]', error?.stack || error));
-if (require.main === module) app.listen(PORT, '0.0.0.0', () => console.log(`Email Extraction CMH9 v7.1.0 running on http://0.0.0.0:${PORT}`));
+if (require.main === module) app.listen(PORT, '0.0.0.0', () => console.log(`Email Extraction CMH9 v7.1.1 running on http://0.0.0.0:${PORT}`));
 module.exports = app;
