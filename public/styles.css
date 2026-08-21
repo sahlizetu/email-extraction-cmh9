@@ -48,15 +48,3 @@ html[data-theme] body:before{background:var(--backdrop)!important;background-ima
 
 /* V7.0.1 Telegram widget loading state */
 .widget-loading{display:inline-flex;align-items:center;justify-content:center;min-height:46px;color:var(--text3);font-size:12px;font-weight:700}.widget-loading:before{content:"";width:14px;height:14px;margin-right:8px;border:2px solid rgba(34,158,217,.22);border-top-color:#229ed9;border-radius:50%;animation:spin .8s linear infinite}
-
-/* V7.1 Cloud Marketing Hub corporate theme — visual layer only */
-html[data-theme="cmh"]{--bg:#15181f;--panel:#222630;--surface:#1b1f27;--input:#171a21;--hover:#2a3040;--line:rgba(113,137,181,.22);--accent:#7c3fc0;--accent-dim:rgba(124,63,192,.18);--navy:#f2f6ff;--text:#f3f6fb;--text2:#c5cfdd;--text3:#8390a5;--red:#ff7991;--green:#50d6a2;--backdrop:linear-gradient(135deg,#15171c 0%,#1b1b24 38%,#151d2b 72%,#101a28 100%);--panel-gradient:linear-gradient(145deg,#292d37 0%,#20242d 56%,#191e28 100%);--surface-gradient:linear-gradient(135deg,#232833 0%,#181d26 100%);--accent-gradient:linear-gradient(100deg,#df1e68 0%,#7d39b5 48%,#277fd1 100%)}
-.theme-choice[data-theme="cmh"] i{background:linear-gradient(135deg,#df1e68 5%,#7d39b5 52%,#277fd1 95%)}
-.brand-logo-img{display:block;width:104px;height:62px;object-fit:cover;object-position:center;border-radius:12px;background:#202020;box-shadow:0 8px 24px rgba(13,20,34,.22)}
-.foot-logo-img{display:block;width:54px;height:34px;object-fit:cover;object-position:center;border-radius:8px;background:#202020}
-html[data-theme="cmh"] .panel{box-shadow:0 1px 0 var(--line),0 18px 48px rgba(0,0,0,.24)}
-html[data-theme="cmh"] .btn-connect,html[data-theme="cmh"] .btn-extract,html[data-theme="cmh"] .btn-action.download{border-color:transparent;background:var(--accent-gradient);color:#fff;box-shadow:0 10px 26px rgba(105,54,173,.23)}
-html[data-theme="cmh"] .mode.selected{border-color:#7d46bd;background:linear-gradient(135deg,rgba(219,31,104,.16),rgba(39,127,209,.15));box-shadow:inset 3px 0 #df1e68,0 0 0 3px rgba(124,63,192,.07)}
-html[data-theme="cmh"] .mode.selected .mode-icon,html[data-theme="cmh"] .check input:checked,html[data-theme="cmh"] .remember input:checked{background:var(--accent-gradient)}
-html[data-theme="cmh"] .progress-rail i{background:var(--accent-gradient)}
-@media(max-width:620px){.brand-logo-img{width:76px;height:46px}.foot-logo-img{width:46px;height:29px}}
